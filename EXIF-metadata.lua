@@ -61,6 +61,16 @@ win = disp:AddWindow({
             ui:CheckBox{ID = "CheckLens", Text = "Lens", Checked = true,},
             ui:ComboBox{ID = "ComboLens",},
           },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckLensType", Text = "Lens Type", Checked = true,},
+            ui:ComboBox{ID = "ComboLensType",},
+          },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckMake", Text = "Camera Manufacturer", Checked = true,},
+            ui:ComboBox{ID = "ComboMake",},
+          },
 
         },
 
@@ -175,6 +185,14 @@ function win.On.CheckLens.Clicked(ev)
   ToogleCheckbox(itm.CheckLens, itm.ComboLens)
 end
 
+function win.On.CheckLensType.Clicked(ev)
+  ToogleCheckbox(itm.CheckLensType, itm.ComboLensType)
+end
+
+function win.On.CheckMake.Clicked(ev)
+  ToogleCheckbox(itm.CheckMake, itm.ComboMake)
+end
+
 -- The window was closed
 function win.On.EditWin.Close(ev)
     disp:ExitLoop()
@@ -274,7 +292,7 @@ function matchMeta(file, clips, exifs)
       end
     end
     itm.TextEdit.PlainText = log
-    itm.TextEdit:MoveCursor("End", "MoveAnchor")
+    itm.TextEdit:MoveCursor("Start", "MoveAnchor")
   end
 end
 
@@ -331,6 +349,8 @@ exifBoxes = {
   { exif = 'Model', check = itm.CheckCamera, combo = itm.ComboCamera, },
   { exif = 'ISO', check = itm.CheckIso, combo = itm.ComboIso, },
   { exif = 'Lens', check = itm.CheckLens, combo = itm.ComboLens, },
+  { exif = 'LensType', check = itm.CheckLensType, combo = itm.ComboLensType, },
+  { exif = 'Make', check = itm.CheckMake, combo = itm.ComboMake, },
 }
 
 function PopulateExifCombo(exifBoxes)
@@ -339,7 +359,9 @@ function PopulateExifCombo(exifBoxes)
     'CreateDate',
     'ISO',
     'Lens',
+    'LensType',
     'LensSpec',
+    'Make',
     'Model',
     'ModifyDate',
     'MediaCreateDate',
