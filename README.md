@@ -15,8 +15,9 @@ Copy the lua script file to following paths:
 
 ### Linux
 
+From command line:
 ```
-wget https://raw.github.com/deric/DaVinciResolve-metadata/EXIF-metatata.lua -P ~/.local/share/DaVinciResolve/Fusion/Scripts/Comp/
+wget https://raw.githubusercontent.com/deric/DaVinciResolve-metadata/main/EXIF-metadata.lua -P ~/.local/share/DaVinciResolve/Fusion/Scripts/Comp/
 ```
 
 ## How does it work
