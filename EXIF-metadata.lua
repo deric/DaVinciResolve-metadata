@@ -71,6 +71,11 @@ win = disp:AddWindow({
             ui:CheckBox{ID = "CheckMake", Text = "Camera Manufacturer", Checked = true,},
             ui:ComboBox{ID = "ComboMake",},
           },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckWhiteBalance", Text = "White Balance Tint", Checked = true,},
+            ui:ComboBox{ID = "ComboWhiteBalance",},
+          },
 
         },
 
@@ -292,7 +297,7 @@ function matchMeta(file, clips, exifs)
       end
     end
     itm.TextEdit.PlainText = log
-    itm.TextEdit:MoveCursor("Start", "MoveAnchor")
+    itm.TextEdit:MoveCursor("End", "MoveAnchor")
   end
 end
 
@@ -351,12 +356,14 @@ exifBoxes = {
   { exif = 'Lens', check = itm.CheckLens, combo = itm.ComboLens, },
   { exif = 'LensType', check = itm.CheckLensType, combo = itm.ComboLensType, },
   { exif = 'Make', check = itm.CheckMake, combo = itm.ComboMake, },
+  { exif = 'WhiteBalance', check = itm.CheckWhiteBalance, combo = itm.ComboWhiteBalance, },
 }
 
 function PopulateExifCombo(exifBoxes)
   -- exiftool recognized attributes
   exif = {
     'CreateDate',
+    'DateTimeOriginal',
     'ISO',
     'Lens',
     'LensType',
@@ -366,6 +373,7 @@ function PopulateExifCombo(exifBoxes)
     'ModifyDate',
     'MediaCreateDate',
     'MediaModifyDate',
+    'WhiteBalance',
   }
 
   for i, meta in ipairs(exifBoxes) do
