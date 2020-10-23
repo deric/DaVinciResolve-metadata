@@ -1,0 +1,25 @@
+Atom {
+	Name = "ExifMetadata",
+	Category = "Tools/Metadata",
+	Author = "YourName",
+	Version = 1,
+	Date = {2020, 10, 23},
+	Description = [[EXIF metadata synchronization tool, allows fetching metatada from filesystem and storing into DaVinci Resolve Media Pool Metadata.
+
+Requiremets:
+
+
+<strong>Debian/Ubuntu</strong>
+<pre>
+sudo apt install libimage-exiftool-perl
+</pre>
+]],
+	Donation = {
+		URL = [[bc1qks84de8jearwchf5l5x2tfcn8e8erhk2t4a3kx?amount=0.00038692&message=resolve]],
+		Amount = "$5 USD",
+	},
+
+	Deploy = {
+		"EXIF-metadata.lua",
+	},
+}
