@@ -78,6 +78,18 @@ win = disp:AddWindow({
           },
 
         },
+        ui:VGap(5, 0.01),
+        ui:HGroup{
+          Weight = 0.1,
+          ui:VGroup{
+            Weight = 0.1,
+            ui:Button{ID = "BtnSelectAll", Text = "Select All",},
+          },
+          ui:VGroup{
+            Weight = 0.1,
+            ui:Button{ID = "BtnUnselectAll", Text = "Unselect All",},
+          }
+        },
 
         ui:VGap(5, 0.01),
         ui:HGroup{
@@ -196,6 +208,20 @@ end
 
 function win.On.CheckMake.Clicked(ev)
   ToogleCheckbox(itm.CheckMake, itm.ComboMake)
+end
+
+function win.On.BtnSelectAll.Clicked(ev)
+   -- Select all checkboxes
+  for i, attr in ipairs(exifBoxes) do
+    attr['check'].Checked = true
+  end
+end
+
+function win.On.BtnUnselectAll.Clicked(ev)
+   -- Unelect all checkboxes
+  for i, attr in ipairs(exifBoxes) do
+    attr['check'].Checked = false
+  end
 end
 
 -- The window was closed
