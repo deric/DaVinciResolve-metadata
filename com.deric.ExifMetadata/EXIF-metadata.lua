@@ -1,5 +1,8 @@
 -- A Tool for metadata synchronization from media files to clips in MediaStore
 
+-- Check the current operating system platform
+platform = (FuPLATFORM_WINDOWS and 'Windows') or (FuPLATFORM_MAC and 'Mac') or (FuPLATFORM_LINUX and 'Linux')
+
 local ui = fu.UIManager
 local disp = bmd.UIDispatcher(ui)
 
@@ -256,7 +259,14 @@ end
 function fetchMeta(file, exifs)
   -- file paths needs escaping whitespace with quotes
   local doc = itm.TextEdit.PlainText
-  local cmd = 'exiftool -csv '.. exifs .. ' "'.. file .. '"'
+  local binary = 'exiftool'
+
+  -- assuming exiftool will be installed on PATH
+  if platform == 'Windows' then
+    binary = 'exiftool.exe'
+  end
+
+  local cmd = binary .. ' -csv '.. exifs .. ' "'.. file .. '"'
   print(cmd)
   local out = runCmd(cmd, true)
 
