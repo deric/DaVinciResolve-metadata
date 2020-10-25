@@ -11,7 +11,7 @@ Copy the lua script file to following paths:
 
 * Linux: `~/.local/share/DaVinciResolve/Fusion/Scripts/Comp`
 * macOS `~/Library/Application Support/Blackmagic Design/DaVinci Resolve/Fusion/Scripts/Comp`
-* Windows `%AppData%\Blackmagic Design\DaVinci Resolve\Support\Fusion\Scripts\Comp`
+* Windows `%AppData%\Roaming\DaVinci Resolve\Support\Fusion\Scripts\Comp`
 
 ### Linux
 

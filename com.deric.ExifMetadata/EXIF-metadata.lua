@@ -137,8 +137,7 @@ end
 function ListSubFolders(index)
   resolve = Resolve()
   local ms = resolve:GetMediaStorage()
-  local vol = ListVolumes()
-  return ms:GetSubFolders(index)
+  return ms:GetSubFolderList(index)
 end
 
 -- preload several top folders
@@ -259,14 +258,7 @@ end
 function fetchMeta(file, exifs)
   -- file paths needs escaping whitespace with quotes
   local doc = itm.TextEdit.PlainText
-  local binary = 'exiftool'
-
-  -- assuming exiftool will be installed on PATH
-  if platform == 'Windows' then
-    binary = 'exiftool.exe'
-  end
-
-  local cmd = binary .. ' -csv '.. exifs .. ' "'.. file .. '"'
+  local cmd = 'exiftool -csv '.. exifs .. ' "'.. file .. '"'
   print(cmd)
   local out = runCmd(cmd, true)
 
