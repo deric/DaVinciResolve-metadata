@@ -15,16 +15,25 @@ win = disp:AddWindow({
         ID = "root",
 
         ui:HGroup{
-          ui:Label{ID = "LabelMaxTreeDepth", Text = "Max subfolder level shown",},
-          -- ui:Slider{ID = 'MaxSourceTreeDepth', Minimum = 1, Maximum = 32},
-          ui:SpinBox{ID = 'MaxSourceTreeDepth', Minimum = 1, Maximum = 32, Value = 6},
-        },
-        ui:VGap(5, 0.01),
-        ui:HGroup{
-          ui:Label{ID = "LabelSelectFolder", Text = "Select media folder",},
-          ui:ComboBox{ID = "ComboMediaRoot"},
-        },
+          Weight = 0.1,
+          ui:Label{
+            ID = 'LabelMediaDir',
+            Text = 'Media Directory:',
+            Weight = 0.25,
+          },
 
+          ui:Label{
+            ID='LabelDirectory',
+            Text = 'Please choose a media directory.',
+            Weight = 1.5,
+          },
+
+          ui:Button{
+            ID = 'BtnChooseDirectory',
+            Text = 'Select a Directory',
+            Weight = 0.25,
+          },
+        },
         ui:HGroup{
           Weight = 0.1,
           ui:Label{
@@ -126,6 +135,12 @@ win = disp:AddWindow({
 
 itm = win:GetItems()
 
+function ChooseMediaRooot()
+  selectedPath = fu:RequestDir(os.getenv("HOME"))
+
+  itm.LabelDirectory.Text = selectedPath
+end
+
 -- Display the volumes attached to the system
 function ListVolumes()
   resolve = Resolve()
@@ -140,27 +155,6 @@ function ListSubFolders(index)
   return ms:GetSubFolderList(index)
 end
 
--- preload several top folders
-function LoadMediaStore(maxDepth)
-  local vol = ListVolumes()
-
-  for i, value in ipairs(vol) do
-    ListMediaSubfolders(value, 1, maxDepth)
-  end
-end
-
-function ListMediaSubfolders(folder, currLevel, maxLevel)
-  if currLevel >= maxLevel then
-    return
-  end
-  local folders = ListSubFolders(folder)
-  for j, val in ipairs(folders) do
-    itm.ComboMediaRoot:AddItem(val)
-    currLevel = currLevel + 1
-    ListMediaSubfolders(val, currLevel, maxLevel)
-  end
-end
-
 function ConvertDate(date)
   return (date:gsub('(%d+):(%d+):(%d+) (%d+:%d+:%d+)','%1-%2-%3 %4'))
 end
@@ -170,15 +164,6 @@ function GetFileName(path)
   return path:match("^.+/(.+)$")
 end
 
-
-function win.On.MaxSourceTreeDepth.ValueChanged(ev)
-  print('SpinBox: '.. itm.MaxSourceTreeDepth.Value)
-
-  itm.ComboMediaRoot:Clear()
-  -- show only top level volumes (depending on maxDepth)
-  LoadMediaStore(itm.MaxSourceTreeDepth.Value)
-end
-
 -- disable comboBox when checkBox is not checked
 function ToogleCheckbox(checkBox, comboBox)
   if checkBox.Checked then
@@ -186,6 +171,11 @@ function ToogleCheckbox(checkBox, comboBox)
   else
     comboBox.Enabled = false
   end
+end
+
+
+function win.On.BtnChooseDirectory.Clicked(ev)
+  ChooseMediaRooot()
 end
 
 function win.On.CheckShot.Clicked(ev)
@@ -359,7 +349,7 @@ function win.On.LoadMetadata.Clicked(ev)
 
   resolve = Resolve()
   local ms = resolve:GetMediaStorage()
-  local dir = itm.ComboMediaRoot.CurrentText
+  local dir = itm.LabelDirectory.Text
 
   local files = ms:GetFileList(dir)
   local exifs = CollectRequiredExifs()
@@ -411,7 +401,6 @@ function PopulateExifCombo(exifBoxes)
 end
 
 PopulateExifCombo(exifBoxes)
-LoadMediaStore(itm.MaxSourceTreeDepth.Value)
 
 win:Show()
 bgcol = { R=0.125, G=0.125, B=0.125, A=1 }
