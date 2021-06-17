@@ -88,6 +88,16 @@ win = disp:AddWindow({
             ui:CheckBox{ID = "CheckWhiteBalance", Text = "White Balance Tint", Checked = true,},
             ui:ComboBox{ID = "ComboWhiteBalance",},
           },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckShutterSpeed", Text = "Shutter", Checked = true,},
+            ui:ComboBox{ID = "ComboShutterSpeed",},
+          },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckAperture", Text = "Camera Aperture", Checked = true,},
+            ui:ComboBox{ID = "ComboAperture",},
+          },
 
         },
         ui:VGap(5, 0.01),
@@ -375,6 +385,8 @@ exifBoxes = {
   { exif = 'LensType', check = itm.CheckLensType, combo = itm.ComboLensType, },
   { exif = 'Make', check = itm.CheckMake, combo = itm.ComboMake, },
   { exif = 'WhiteBalance', check = itm.CheckWhiteBalance, combo = itm.ComboWhiteBalance, },
+  { exif = 'ShutterSpeed', check = itm.CheckShutterSpeed, combo = itm.ComboShutterSpeed },
+  { exif = 'Aperture', check = itm.CheckAperture, combo = itm.ComboAperture}
 }
 
 function PopulateExifCombo(exifBoxes)
@@ -382,6 +394,8 @@ function PopulateExifCombo(exifBoxes)
   exif = {
     'CreateDate',
     'DateTimeOriginal',
+    'ShutterSpeed',
+    'Aperture',
     'ISO',
     'Lens',
     'LensType',
