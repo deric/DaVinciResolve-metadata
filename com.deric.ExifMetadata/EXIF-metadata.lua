@@ -24,7 +24,7 @@ win = disp:AddWindow({
 
           ui:Label{
             ID='LabelDirectory',
-            Text = 'Please choose a media directory.',
+            Text = os.getenv("HOME"),
             Weight = 1.5,
           },
 
@@ -146,7 +146,7 @@ win = disp:AddWindow({
 itm = win:GetItems()
 
 function ChooseMediaRooot()
-  selectedPath = fu:RequestDir(os.getenv("HOME"))
+  selectedPath = fu:RequestDir(itm.LabelDirectory.Text)
 
   itm.LabelDirectory.Text = selectedPath
 end
