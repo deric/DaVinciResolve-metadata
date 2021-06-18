@@ -231,15 +231,11 @@ function win.On.EditWin.Close(ev)
     disp:ExitLoop()
 end
 
-function runCmd(cmd, raw)
-  local f = assert(io.popen(cmd, 'r'))
-  local s = assert(f:read('*a'))
-  f:close()
-  if raw then return s end
-  s = string.gsub(s, '^%s+', '')
-  s = string.gsub(s, '%s+$', '')
-  s = string.gsub(s, '[\n\r]+', ' ')
-  return s:match( "(.-)%s*$" ) -- remove trailing space
+function runCmd(cmd)
+  local fileHandle = assert(io.popen(cmd, 'r'))
+  local out = assert(fileHandle:read('*a'))
+  fileHandle:close()
+  return out
 end
 
 function inspect(o)
@@ -258,9 +254,9 @@ end
 function fetchMeta(file, exifs)
   -- file paths needs escaping whitespace with quotes
   local doc = itm.TextEdit.PlainText
-  local cmd = 'exiftool -csv '.. exifs .. ' "'.. file .. '"'
+  local cmd = 'exiftool -csv -ee '.. exifs .. ' "'.. file .. '"'
   print(cmd)
-  local out = runCmd(cmd, true)
+  local out = runCmd(cmd)
 
   local header, values
   i = 0
