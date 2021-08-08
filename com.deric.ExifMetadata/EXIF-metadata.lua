@@ -17,26 +17,6 @@ win = disp:AddWindow({
         ui:HGroup{
           Weight = 0.1,
           ui:Label{
-            ID = 'LabelMediaDir',
-            Text = 'Media Directory:',
-            Weight = 0.25,
-          },
-
-          ui:Label{
-            ID='LabelDirectory',
-            Text = os.getenv("HOME"),
-            Weight = 1.5,
-          },
-
-          ui:Button{
-            ID = 'BtnChooseDirectory',
-            Text = 'Select a Directory',
-            Weight = 0.25,
-          },
-        },
-        ui:HGroup{
-          Weight = 0.1,
-          ui:Label{
             ID = "LabelMapping", Text = "Metadata mapping",
             Alignment = { AlignHCenter = true, AlignVCenter = true },
           },
@@ -145,33 +125,8 @@ win = disp:AddWindow({
 
 itm = win:GetItems()
 
-function ChooseMediaRooot()
-  selectedPath = fu:RequestDir(itm.LabelDirectory.Text)
-
-  itm.LabelDirectory.Text = selectedPath
-end
-
--- Display the volumes attached to the system
-function ListVolumes()
-  resolve = Resolve()
-  local ms = resolve:GetMediaStorage()
-  return ms:GetMountedVolumes()
-end
-
--- Display the subfolders in the MediaStorage
-function ListSubFolders(index)
-  resolve = Resolve()
-  local ms = resolve:GetMediaStorage()
-  return ms:GetSubFolderList(index)
-end
-
 function ConvertDate(date)
   return (date:gsub('(%d+):(%d+):(%d+) (%d+:%d+:%d+)','%1-%2-%3 %4'))
-end
-
--- filename from path
-function GetFileName(path)
-  return path:match("^.+/(.+)$")
 end
 
 -- disable comboBox when checkBox is not checked
@@ -181,11 +136,6 @@ function ToogleCheckbox(checkBox, comboBox)
   else
     comboBox.Enabled = false
   end
-end
-
-
-function win.On.BtnChooseDirectory.Clicked(ev)
-  ChooseMediaRooot()
 end
 
 function win.On.CheckShot.Clicked(ev)
@@ -291,38 +241,26 @@ function loadMediaPool()
   local clips = {}
 
   -- load clips from pool into a table
+  local count = 0
   for i, val in ipairs(mp:GetRootFolder():GetClipList()) do
     clips[val:GetName()] = val
+    count = count + 1
   end
+  log("Loaded " .. count .. " media pool items")
 
   return clips
 end
 
--- match existing media file with a file in media pool
-function matchMeta(file, clips, exifs)
-  --fetchMeta(file)
-  local fn = GetFileName(file)
-  if clips[fn] ~= nil then
-    local log = itm.TextEdit.PlainText
-    log = log .. fn .. "\n"
-    local clip = clips[fn]
-    -- print('matched ' .. fn .. ' with: ' .. clip:GetMediaId())
-    local meta = fetchMeta(file, exifs)
-
-    -- update clip metadata
-    for i, attr in ipairs(exifBoxes) do
-      if attr['check'].Checked then
-        -- use attribute name from checkbox label
-        local val = meta[attr['combo'].CurrentText]
-        if val ~= nil then
-          log = log .. attr['check'].Text.. ' : '.. val .. "\n"
-          clip:SetMetadata(attr['check'].Text, val)
-        end
-      end
-    end
-    itm.TextEdit.PlainText = log
-    itm.TextEdit:MoveCursor("End", "MoveAnchor")
+-- append message into TextEdit field
+function log(message)
+  local log = itm.TextEdit.PlainText
+  if message == nil then
+    log = log .. "(nil) \n"
+  else
+    log = log .. message .. "\n"
   end
+  itm.TextEdit.PlainText = log
+  itm.TextEdit:MoveCursor("End", "MoveAnchor")
 end
 
 function CollectRequiredExifs()
@@ -347,29 +285,44 @@ end
 
 -- The "LoadMetadata" button was pressed.
 function win.On.LoadMetadata.Clicked(ev)
-  print('[Update] Synchronizing metadata...')
-
   itm.TextEdit.PlainText = ''
+  log('Synchronizing metadata...')
 
   local clips = loadMediaPool()
-
-  resolve = Resolve()
-  local ms = resolve:GetMediaStorage()
-  local dir = itm.LabelDirectory.Text
-
-  local files = ms:GetFileList(dir)
   local exifs = CollectRequiredExifs()
 
-  for i, val in ipairs(files) do
-    matchMeta(val, clips, exifs)
-  end
+  local cnt = 1
+  for name, clip in pairs(clips) do
+    log("[Item " .. cnt .. "] " .. name)
+    -- property is yet another table
+    local prop = clip:GetClipProperty("File Path")
+    -- actual path to clip's source on disk
+    local clip_path = prop["File Path"]
+    if clip_path == '' then
+      -- e.g. Fusion clips don't have 'File Path' attribute
+      -- there's probably no way how to retrieve original media file path
+      -- print(inspect(clip:GetClipProperty()))
+      log("(warning) Empty path can't fetch meta data")
+    else
+      log("Path: " .. prop["File Path"])
+      -- read EXIF
+      local meta = fetchMeta(clip_path, exifs)
 
-  for i, val in ipairs(ms:GetSubFolderList(dir)) do
-    local sub = ms:GetFileList(val)
-    for j, file in ipairs(sub) do
-      matchMeta(file, clips, exifs)
+      -- update clip's metadata
+      for i, attr in ipairs(exifBoxes) do
+        if attr['check'].Checked then
+          -- use attribute name from checkbox label
+          local val = meta[attr['combo'].CurrentText]
+          if val ~= nil then
+            log(attr['check'].Text.. ' : '.. val)
+            clip:SetMetadata(attr['check'].Text, val)
+          end
+        end
+      end
     end
+    cnt = cnt + 1
   end
+  log("(done) Processed " .. cnt .. " media pool files")
 end
 
 exifBoxes = {
