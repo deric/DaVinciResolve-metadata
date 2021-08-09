@@ -49,6 +49,30 @@ In order to check available attributes you can use following command:
 
 ```bash
 $ exiftool -ee -a /path/to/media.mov
+...
+Media Create Date               : 2018:07:12 18:04:40
+Media Modify Date               : 2018:07:12 18:04:40
+Media Time Scale                : 48000
+Media Duration                  : 0:01:36
+Handler Class                   : Media Handler
+Handler Type                    : Audio Track
+Handler Description             : SoundHandler
+Balance                         : 0
+Handler Class                   : Data Handler
+Handler Type                    : URL
+Handler Description             : DataHandler
+Audio Format                    : sowt
+Audio Channels                  : 2
+Audio Bits Per Sample           : 16
+Audio Sample Rate               : 48000
+Layout Flags                    : Stereo
+Audio Channels                  : 2
+Software Version                : Lavf57.83.100
+Image Size                      : 1920x1080
+Megapixels                      : 2.1
+Avg Bitrate                     : 46.7 Mbps
+Rotation                        : 0
+...
 ```
 
 
