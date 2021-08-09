@@ -43,4 +43,12 @@ wget https://raw.githubusercontent.com/deric/DaVinciResolve-metadata/main/com.de
 
 Each media pool item will be examined using the `exiftool` for checked meta fields. If present the value will be overwritten in clip's property. Such value then could be used for sorting or searching.
 
+See Console output for actual command used to retrieve EXIF metadata.
+
+In order to check available attributes you can use following command:
+
+```bash
+$ exiftool -ee -a /path/to/media.mov
+```
+
 

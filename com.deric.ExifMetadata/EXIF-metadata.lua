@@ -242,13 +242,26 @@ function loadMediaPool()
 
   -- load clips from pool into a table
   local count = 0
-  for i, val in ipairs(mp:GetRootFolder():GetClipList()) do
-    clips[val:GetName()] = val
-    count = count + 1
-  end
+
+  count = recursiveLoadMedia(mp:GetRootFolder(), clips, count)
+
   log("Loaded " .. count .. " media pool items")
 
   return clips
+end
+
+function recursiveLoadMedia(folder, clips, count)
+  for i, val in ipairs(folder:GetClipList()) do
+    clips[val:GetName()] = val
+    count = count + 1
+  end
+
+  for i, subfolder in ipairs(folder:GetSubFolderList()) do
+    log("Loading subfolder " .. subfolder:GetName())
+    count = recursiveLoadMedia(subfolder, clips, count)
+  end
+
+  return count
 end
 
 -- append message into TextEdit field
@@ -291,9 +304,13 @@ function win.On.LoadMetadata.Clicked(ev)
   local clips = loadMediaPool()
   local exifs = CollectRequiredExifs()
 
+  updateMetadata(clips, exifs)
+end
+
+function updateMetadata(clips, exifs)
   local cnt = 1
   for name, clip in pairs(clips) do
-    log("[Item " .. cnt .. "] " .. name)
+    log("[Clip " .. cnt .. "] " .. name)
     -- property is yet another table
     local prop = clip:GetClipProperty("File Path")
     -- actual path to clip's source on disk
