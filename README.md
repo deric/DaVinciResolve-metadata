@@ -21,13 +21,15 @@ From command line:
 
 Linux
 ```
-wget https://raw.githubusercontent.com/deric/DaVinciResolve-metadata/main/com.deric.ExifMetadata/EXIF-metadata.lua -P ~/.local/share/DaVinciResolve/Fusion/Scripts/Comp/
+wget https://raw.githubusercontent.com/deric/DaVinciResolve-metadata/main/com.deric.ExifMetadata/Tools/Metadata/EXIF-metadata.lua \
+-P ~/.local/share/DaVinciResolve/Fusion/Scripts/Comp/
 ```
 
 MacOS
 
 ```
-wget https://raw.githubusercontent.com/deric/DaVinciResolve-metadata/main/com.deric.ExifMetadata/EXIF-metadata.lua -P ~/Library/Application\ Support/Blackmagic Design/DaVinci\ Resolve/Fusion/Scripts/Comp
+wget https://raw.githubusercontent.com/deric/DaVinciResolve-metadata/main/com.deric.ExifMetadata/Tools/Metadata/EXIF-metadata.lua \
+-P ~/Library/Application\ Support/Blackmagic Design/DaVinci\ Resolve/Fusion/Scripts/Comp
 ```
 
 ## Usage
