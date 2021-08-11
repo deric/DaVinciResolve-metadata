@@ -8,7 +8,7 @@ Media clip attributes in DaVinci Resolve aren't synchronized with file's EXIF me
     * Debian/Ubuntu: `sudo apt install libimage-exiftool-perl`
     * Fedora/RedHat: `sudo dnf install perl-Image-ExifTool.noarch`
     * macOS: `brew install exiftool`
-    * Windows: [download latest version from exiftool.org](https://exiftool.org/)
+    * Windows: [download exiftool installer](https://oliverbetz.de/pages/Artikel/ExifTool-for-Windows#toc-3)
 
 ## Installation
 
