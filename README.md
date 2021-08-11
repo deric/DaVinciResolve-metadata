@@ -2,10 +2,13 @@
 
 Media clip attributes in DaVinci Resolve aren't synchronized with file's EXIF metadata. This tool provides simple synchronization between media files on disk and media pool item in DaVinci Resolve.
 
-## Requirements:
+## Requirements
 
   - [exif tool](https://exiftool.org/), see [install page](https://exiftool.org/install.html)
     * Debian/Ubuntu: `sudo apt install libimage-exiftool-perl`
+    * Fedora/RedHat: `sudo dnf install perl-Image-ExifTool.noarch`
+    * macOS: `brew install exiftool`
+    * Windows: [download latest version from exiftool.org](https://exiftool.org/)
 
 ## Installation
 
