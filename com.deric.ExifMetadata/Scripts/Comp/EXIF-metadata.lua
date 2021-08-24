@@ -173,6 +173,7 @@ function win.On.BtnUnselectAll.Clicked(ev)
    -- Unelect all checkboxes
   for i, attr in ipairs(exifBoxes) do
     attr['check'].Checked = false
+    attr['combo'].Enabled = false
   end
 end
 
