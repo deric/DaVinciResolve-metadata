@@ -9,7 +9,7 @@ local disp = bmd.UIDispatcher(ui)
 win = disp:AddWindow({
     ID = 'EditWin',
     TargetID = 'EditWin',
-    Geometry = {0, 0, 600, 600},
+    Geometry = {100, 200, 600, 600},
     WindowTitle = 'EXIF Metadata Synchronizer',
     ui:VGroup{
         ID = "root",
@@ -126,7 +126,7 @@ win = disp:AddWindow({
 itm = win:GetItems()
 
 function ConvertDate(date)
-  return (date:gsub('(%d+):(%d+):(%d+) (%d+:%d+:%d+)','%1-%2-%3 %4'))
+  return date:gsub('(%d+):(%d+):(%d+) (%d+:%d+:%d+)','%1-%2-%3 %4')
 end
 
 -- disable comboBox when checkBox is not checked
@@ -199,6 +199,25 @@ function inspect(o)
    else
       return tostring(o)
    end
+end
+
+function split(pString, pPattern)
+   local Table = {}  -- NOTE: use {n = 0} in Lua-5.0
+   local fpat = "(.-)" .. pPattern
+   local last_end = 1
+   local s, e, cap = pString:find(fpat, 1)
+   while s do
+      if s ~= 1 or cap ~= "" then
+     table.insert(Table,cap)
+      end
+      last_end = e+1
+      s, e, cap = pString:find(fpat, last_end)
+   end
+   if last_end <= #pString then
+      cap = pString:sub(last_end)
+      table.insert(Table, cap)
+   end
+   return Table
 end
 
 function fetchMeta(file, exifs)
