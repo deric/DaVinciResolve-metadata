@@ -10,6 +10,13 @@ Media clip attributes in DaVinci Resolve aren't synchronized with file's EXIF me
     * macOS: `brew install exiftool`
     * Windows: [download exiftool installer](https://oliverbetz.de/pages/Artikel/ExifTool-for-Windows#toc-3)
 
+## Compatibility
+
+Tested on:
+
+  * Resolve 16
+  * Resolve 17
+
 ## Installation
 
 Copy the lua script file to following paths:

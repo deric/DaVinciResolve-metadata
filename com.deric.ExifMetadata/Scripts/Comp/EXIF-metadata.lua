@@ -330,17 +330,19 @@ function updateMetadata(clips, exifs)
   local cnt = 1
   for name, clip in pairs(clips) do
     log("[Clip " .. cnt .. "] " .. name)
-    -- property is yet another table
-    local prop = clip:GetClipProperty("File Path")
     -- actual path to clip's source on disk
-    local clip_path = prop["File Path"]
+    local clip_path = clip:GetClipProperty("File Path")
+    if (type(clip_path) == "table") then
+      -- property is yet another table in Resolve 16 (in Resolve 17, string will be returned)
+      clip_path = clip_path["File Path"]
+    end
     if clip_path == '' then
       -- e.g. Fusion clips don't have 'File Path' attribute
       -- there's probably no way how to retrieve original media file path
       -- print(inspect(clip:GetClipProperty()))
       log("(warning) Empty path can't fetch meta data")
     else
-      log("Path: " .. prop["File Path"])
+      log("Path: " .. clip_path)
       -- read EXIF
       local meta = fetchMeta(clip_path, exifs)
 
