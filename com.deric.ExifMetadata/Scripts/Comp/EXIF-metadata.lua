@@ -307,7 +307,7 @@ function CollectRequiredExifs()
     end
   end
 
-  if j == 1 then
+  if j == 0 then
     error("No check box was selected!")
   end
 
