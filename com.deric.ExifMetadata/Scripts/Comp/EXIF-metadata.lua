@@ -96,7 +96,14 @@ win = disp:AddWindow({
         ui:VGap(5, 0.01),
         ui:HGroup{
             Weight = 0.1,
-            ui:Button{ID = "LoadMetadata", Text = "Sync MediaStore",},
+            ui:VGroup{
+              Weight = 0.1,
+              ui:Button{ID = "DryRun", Text = "Dry run",},
+            },
+            ui:VGroup{
+              Weight = 0.1,
+              ui:Button{ID = "LoadMetadata", Text = "Sync MediaStore",},
+            }
         },
         ui:HGroup{
         Weight = 1,
@@ -324,10 +331,21 @@ function win.On.LoadMetadata.Clicked(ev)
   local clips = loadMediaPool()
   local exifs = CollectRequiredExifs()
 
-  updateMetadata(clips, exifs)
+  updateMetadata(clips, exifs, false)
 end
 
-function updateMetadata(clips, exifs)
+function win.On.DryRun.Clicked(ev)
+  itm.TextEdit.PlainText = ''
+  log('Only printing possible metadata changes')
+
+  local clips = loadMediaPool()
+  local exifs = CollectRequiredExifs()
+
+  updateMetadata(clips, exifs, true)
+end
+
+-- noop = no-operation
+function updateMetadata(clips, exifs, noop)
   local cnt = 1
   for name, clip in pairs(clips) do
     log("[Clip " .. cnt .. "] " .. name)
@@ -353,8 +371,13 @@ function updateMetadata(clips, exifs)
           -- use attribute name from checkbox label
           local val = meta[attr['combo'].CurrentText]
           if val ~= nil then
-            log(attr['check'].Text.. ' : '.. val)
-            clip:SetMetadata(attr['check'].Text, val)
+            if noop then
+              log(attr['check'].Text .. ': ' .. clip:GetMetadata(attr['check'].Text) .. ' -> ' .. val)
+            else
+              -- actually update attributes
+              log(attr['check'].Text.. ' : '.. val)
+              clip:SetMetadata(attr['check'].Text, val)
+            end
           end
         end
       end
