@@ -78,6 +78,16 @@ win = disp:AddWindow({
             ui:CheckBox{ID = "CheckAperture", Text = "Camera Aperture", Checked = true,},
             ui:ComboBox{ID = "ComboAperture",},
           },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckCameraFPS", Text = "Camera FPS", Checked = true,},
+            ui:ComboBox{ID = "ComboCameraFPS",},
+          },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckCameraFirmware", Text = "Camera Firmware", Checked = true,},
+            ui:ComboBox{ID = "ComboCameraFirmware",},
+          },
 
         },
         ui:VGap(5, 0.01),
@@ -142,7 +152,9 @@ exifBoxes = {
   { exif = 'Make', check = itm.CheckMake, combo = itm.ComboMake, },
   { exif = 'WhiteBalance', check = itm.CheckWhiteBalance, combo = itm.ComboWhiteBalance, },
   { exif = 'ShutterSpeed', check = itm.CheckShutterSpeed, combo = itm.ComboShutterSpeed },
-  { exif = 'Aperture', check = itm.CheckAperture, combo = itm.ComboAperture}
+  { exif = 'Aperture', check = itm.CheckAperture, combo = itm.ComboAperture},
+  { exif = 'FrameRate', check = itm.CheckCameraFPS, combo = itm.ComboCameraFPS},
+  { exif = 'Software', check = itm.CheckCameraFirmware, combo = itm.ComboCameraFirmware},
 }
 
   -- exiftool recognized attributes
