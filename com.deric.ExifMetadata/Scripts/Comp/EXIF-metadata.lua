@@ -264,7 +264,8 @@ function fetchMeta(file, exifs)
       t[v] = values[i]
     end
   end
-  --print('CreateDate:' .. t['CreateDate'])
+
+  print(inspect(t))
 
   return t
 end
@@ -369,7 +370,7 @@ function updateMetadata(clips, exifs, noop)
       -- print(inspect(clip:GetClipProperty()))
       log("(warning) Empty path can't fetch meta data")
     else
-      log("Path: " .. clip_path)
+      -- log("Path: " .. clip_path)
       -- read EXIF
       local meta = fetchMeta(clip_path, exifs)
 
