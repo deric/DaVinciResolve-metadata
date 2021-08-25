@@ -313,17 +313,17 @@ end
 
 function CollectRequiredExifs()
   local t = {}
-  local j = 1
+  local j = 1 -- concat doesn't work when numbering from zero
 
   -- go through all checkboxes and find selected ones
   for i, attr in ipairs(exifBoxes) do
     if attr['check'].Checked then
-      t[i] = attr['combo'].CurrentText
-      j = i
+      t[j] = attr['combo'].CurrentText
+      j = j + 1
     end
   end
 
-  if j == 0 then
+  if j == 1 then
     error("No check box was selected!")
   end
 
