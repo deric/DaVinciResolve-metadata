@@ -132,6 +132,38 @@ win = disp:AddWindow({
 
 itm = win:GetItems()
 
+exifBoxes = {
+  -- EXIF tag mapped by default to resolve field
+  { exif = 'CreateDate', check = itm.CheckShot, combo = itm.ComboShot, },
+  { exif = 'Model', check = itm.CheckCamera, combo = itm.ComboCamera, },
+  { exif = 'ISO', check = itm.CheckIso, combo = itm.ComboIso, },
+  { exif = 'Lens', check = itm.CheckLens, combo = itm.ComboLens, },
+  { exif = 'LensType', check = itm.CheckLensType, combo = itm.ComboLensType, },
+  { exif = 'Make', check = itm.CheckMake, combo = itm.ComboMake, },
+  { exif = 'WhiteBalance', check = itm.CheckWhiteBalance, combo = itm.ComboWhiteBalance, },
+  { exif = 'ShutterSpeed', check = itm.CheckShutterSpeed, combo = itm.ComboShutterSpeed },
+  { exif = 'Aperture', check = itm.CheckAperture, combo = itm.ComboAperture}
+}
+
+  -- exiftool recognized attributes
+exifAttributes = {
+    'CreateDate',
+    'DateTimeOriginal',
+    'ShutterSpeed',
+    'Aperture',
+    'ISO',
+    'Lens',
+    'LensType',
+    'LensSpec',
+    'Make',
+    'Model',
+    'ModifyDate',
+    'MediaCreateDate',
+    'MediaModifyDate',
+    'WhiteBalance',
+}
+
+
 function ConvertDate(date)
   return date:gsub('(%d+):(%d+):(%d+) (%d+:%d+:%d+)','%1-%2-%3 %4')
 end
@@ -143,30 +175,6 @@ function ToogleCheckbox(checkBox, comboBox)
   else
     comboBox.Enabled = false
   end
-end
-
-function win.On.CheckShot.Clicked(ev)
-  ToogleCheckbox(itm.CheckShot, itm.ComboShot)
-end
-
-function win.On.CheckCamera.Clicked(ev)
-  ToogleCheckbox(itm.CheckCamera, itm.ComboCamera)
-end
-
-function win.On.CheckIso.Clicked(ev)
-  ToogleCheckbox(itm.CheckIso, itm.ComboIso)
-end
-
-function win.On.CheckLens.Clicked(ev)
-  ToogleCheckbox(itm.CheckLens, itm.ComboLens)
-end
-
-function win.On.CheckLensType.Clicked(ev)
-  ToogleCheckbox(itm.CheckLensType, itm.ComboLensType)
-end
-
-function win.On.CheckMake.Clicked(ev)
-  ToogleCheckbox(itm.CheckMake, itm.ComboMake)
 end
 
 function win.On.BtnSelectAll.Clicked(ev)
@@ -387,41 +395,20 @@ function updateMetadata(clips, exifs, noop)
   log("(done) Processed " .. cnt .. " media pool files")
 end
 
-exifBoxes = {
-  -- EXIF tag mapped by default to resolve field
-  { exif = 'CreateDate', check = itm.CheckShot, combo = itm.ComboShot, },
-  { exif = 'Model', check = itm.CheckCamera, combo = itm.ComboCamera, },
-  { exif = 'ISO', check = itm.CheckIso, combo = itm.ComboIso, },
-  { exif = 'Lens', check = itm.CheckLens, combo = itm.ComboLens, },
-  { exif = 'LensType', check = itm.CheckLensType, combo = itm.ComboLensType, },
-  { exif = 'Make', check = itm.CheckMake, combo = itm.ComboMake, },
-  { exif = 'WhiteBalance', check = itm.CheckWhiteBalance, combo = itm.ComboWhiteBalance, },
-  { exif = 'ShutterSpeed', check = itm.CheckShutterSpeed, combo = itm.ComboShutterSpeed },
-  { exif = 'Aperture', check = itm.CheckAperture, combo = itm.ComboAperture}
-}
-
 function PopulateExifCombo(exifBoxes)
-  -- exiftool recognized attributes
-  exif = {
-    'CreateDate',
-    'DateTimeOriginal',
-    'ShutterSpeed',
-    'Aperture',
-    'ISO',
-    'Lens',
-    'LensType',
-    'LensSpec',
-    'Make',
-    'Model',
-    'ModifyDate',
-    'MediaCreateDate',
-    'MediaModifyDate',
-    'WhiteBalance',
-  }
-
   for i, meta in ipairs(exifBoxes) do
-    meta['combo']:AddItems(exif)        -- set all known EXIF keys
+    meta['combo']:AddItems(exifAttributes)   -- set all known EXIF keys
     meta['combo'].CurrentText = meta['exif'] -- set default value
+
+    -- dynamic on click function declaration
+    local comboBox = meta['combo']
+    local checkBox = meta['check']
+
+    local elmID =  checkBox['ID']
+
+    win.On[elmID].Clicked = function(ev)
+      ToogleCheckbox(checkBox, comboBox)
+    end
   end
 end
 
