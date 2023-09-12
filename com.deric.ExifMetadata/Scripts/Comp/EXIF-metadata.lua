@@ -70,7 +70,7 @@ win = disp:AddWindow({
           },
           ui:HGroup{
             Weight = 0.1,
-            ui:CheckBox{ID = "CheckShutterSpeed", Text = "Shutter", Checked = true,},
+            ui:CheckBox{ID = "CheckShutterSpeed", Text = "Shutter Speed", Checked = true,},
             ui:ComboBox{ID = "ComboShutterSpeed",},
           },
           ui:HGroup{
@@ -270,7 +270,12 @@ end
 function fetchMeta(file, exifs)
   -- file paths needs escaping whitespace with quotes
   local doc = itm.TextEdit.PlainText
-  local cmd = 'exiftool -csv -ee '.. exifs .. ' "'.. file .. '"'
+  local cmd = ''
+  if platform == 'Mac' then 
+      cmd = 'PATH=/usr/local/bin:/opt/homebrew/bin:$PATH; exiftool -csv -ee '.. exifs .. ' "'.. file .. '"'
+  else
+      cmd = 'exiftool -csv -ee '.. exifs .. ' "'.. file .. '"'
+  end
   print(cmd)
   local out = runCmd(cmd)
 
@@ -319,7 +324,12 @@ end
 
 function recursiveLoadMedia(folder, clips, count)
   for i, val in ipairs(folder:GetClipList()) do
-    clips[val:GetName()] = val
+    local cname = val:GetClipProperty("Clip Name")
+    if (type(cname) == "table") then
+      cname = cname["Clip Name"]
+    end
+    cname = cname .. " [" .. val:GetMediaId() .."]"
+    clips[cname] = val
     count = count + 1
   end
 
