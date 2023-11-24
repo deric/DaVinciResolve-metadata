@@ -5,11 +5,12 @@ platform = (FuPLATFORM_WINDOWS and 'Windows') or (FuPLATFORM_MAC and 'Mac') or (
 
 local ui = fu.UIManager
 local disp = bmd.UIDispatcher(ui)
+local Cancelled = false
 
 win = disp:AddWindow({
     ID = 'EditWin',
     TargetID = 'EditWin',
-    Geometry = {100, 200, 600, 600},
+    Geometry = {100, 200, 550, 800},
     WindowTitle = 'EXIF Metadata Synchronizer',
     ui:VGroup{
         ID = "root",
@@ -27,8 +28,8 @@ win = disp:AddWindow({
           Weight = 0.1,
           ui:HGroup{
             Weight = 0.1,
-            ui:Label{ID = "LabelResolve", Text = "DaVinci Resolve Field",},
-            ui:Label{ID = "LabelExif", Text = "EXIF Field",},
+            ui:Label{ID = "LabelResolve", Text = "DaVinci Resolve Field", ToolTip = 'Metadata fields within Resolve'},
+            ui:Label{ID = "LabelExif", Text = "EXIF Field", ToolTip = 'Metadata fields within the scanned files'},
           },
 
           ui:VGap(5, 0.01),
@@ -37,6 +38,11 @@ win = disp:AddWindow({
             Weight = 0.1,
             ui:CheckBox{ID = "CheckShot", Text = "Shot", Checked = true,},
             ui:ComboBox{ID = "ComboShot",},
+          },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckDateRecorded", Text = "Date Recorded", Checked = true,},
+            ui:ComboBox{ID = "ComboDateRecorded",},
           },
           ui:HGroup{
             Weight = 0.1,
@@ -70,6 +76,11 @@ win = disp:AddWindow({
           },
           ui:HGroup{
             Weight = 0.1,
+            ui:CheckBox{ID = "CheckCodecBitrate", Text = "Codec Bitrate", Checked = true,},
+            ui:ComboBox{ID = "ComboCodecBitrate",},
+          },
+          ui:HGroup{
+            Weight = 0.1,
             ui:CheckBox{ID = "CheckShutterSpeed", Text = "Shutter Speed", Checked = true,},
             ui:ComboBox{ID = "ComboShutterSpeed",},
           },
@@ -88,9 +99,38 @@ win = disp:AddWindow({
             ui:CheckBox{ID = "CheckCameraFirmware", Text = "Camera Firmware", Checked = true,},
             ui:ComboBox{ID = "ComboCameraFirmware",},
           },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckLocation", Text = "Location", Checked = false,},
+            ui:ComboBox{ID = "ComboLocation", Enabled = false},
+          },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckComments", Text = "Comments", Checked = false,},
+            ui:ComboBox{ID = "ComboComments", Enabled = false},
+          },
 
         },
+        
         ui:VGap(5, 0.01),
+
+        ui:HGroup{
+          Weight = 0.1,
+          ui:Label{
+            ID = "LabelSettings", Text = "Scan Settings",
+            Alignment = { AlignHCenter = true, AlignVCenter = true },
+          },
+        },
+        ui:VGap(5, 0.01),
+
+        ui:HGroup{
+          Weight = 0.1,
+          ui:CheckBox{ID = "CheckExtractEmbedded", Text = "Extract Embedded Data", Checked = true, ToolTip = 'Disabling this will speedup scanning for files with GPS or motion data, but might skip metadata on certain cameras'},
+          ui:CheckBox{ID = "CheckCurrentFolder", Text = "Scan Current Folder Only", Checked = false, ToolTip = 'Only scan the files in the folder currently selected or open in the media pool'},
+        },
+
+        ui:VGap(5, 0.01),
+
         ui:HGroup{
           Weight = 0.1,
           ui:VGroup{
@@ -108,11 +148,11 @@ win = disp:AddWindow({
             Weight = 0.1,
             ui:VGroup{
               Weight = 0.1,
-              ui:Button{ID = "DryRun", Text = "Dry run",},
+              ui:Button{ID = "DryRun", Text = "Dry run", ToolTip = 'Scan the files without syncing the metadata with Resolve'},
             },
             ui:VGroup{
               Weight = 0.1,
-              ui:Button{ID = "LoadMetadata", Text = "Sync MediaStore",},
+              ui:Button{ID = "LoadMetadata", Text = "Sync MediaStore", ToolTip = 'Scan and sync the metadata with Resolve'},
             }
         },
         ui:HGroup{
@@ -137,6 +177,14 @@ win = disp:AddWindow({
             Lexer = 'fusion',
             },
         },
+
+        ui:HGroup{
+          Weight = 0.1,
+          ui:VGroup{
+            Weight = 0.1,
+            ui:Button{ID = "BtnCancel", Text = "Cancel Scan" , Checkable = true, Enabled = false, ToolTip = 'Cancels the scan\nOnly click once to activate button, might react slow when code is busy'},
+          }
+        },
     },
 })
 
@@ -144,54 +192,66 @@ itm = win:GetItems()
 
 exifBoxes = {
   -- EXIF tag mapped by default to resolve field
-  { exif = 'CreateDate', check = itm.CheckShot, combo = itm.ComboShot, },
-  { exif = 'Model', check = itm.CheckCamera, combo = itm.ComboCamera, },
-  { exif = 'ISO', check = itm.CheckIso, combo = itm.ComboIso, },
-  { exif = 'Lens', check = itm.CheckLens, combo = itm.ComboLens, },
-  { exif = 'LensType', check = itm.CheckLensType, combo = itm.ComboLensType, },
-  { exif = 'Make', check = itm.CheckMake, combo = itm.ComboMake, },
-  { exif = 'WhiteBalance', check = itm.CheckWhiteBalance, combo = itm.ComboWhiteBalance, },
-  { exif = 'ShutterSpeed', check = itm.CheckShutterSpeed, combo = itm.ComboShutterSpeed },
+  { exif = 'FileName', check = itm.CheckShot, combo = itm.ComboShot},
+  { exif = 'CreateDate',check = itm.CheckDateRecorded, combo = itm.ComboDateRecorded},
+  { exif = 'Model', check = itm.CheckCamera, combo = itm.ComboCamera},
+  { exif = 'ISO', check = itm.CheckIso, combo = itm.ComboIso},
+  { exif = 'Lens', check = itm.CheckLens, combo = itm.ComboLens},
+  { exif = 'LensType', check = itm.CheckLensType, combo = itm.ComboLensType},
+  { exif = 'Make', check = itm.CheckMake, combo = itm.ComboMake},
+  { exif = 'WhiteBalance', check = itm.CheckWhiteBalance, combo = itm.ComboWhiteBalance},
+  { exif = 'AvgBitrate', check = itm.CheckCodecBitrate, combo = itm.ComboCodecBitrate},
+  { exif = 'ShutterSpeed', check = itm.CheckShutterSpeed, combo = itm.ComboShutterSpeed},
   { exif = 'Aperture', check = itm.CheckAperture, combo = itm.ComboAperture},
-  { exif = 'FrameRate', check = itm.CheckCameraFPS, combo = itm.ComboCameraFPS},
-  { exif = 'Software', check = itm.CheckCameraFirmware, combo = itm.ComboCameraFirmware},
+  { exif = 'VideoFrameRate', check = itm.CheckCameraFPS, combo = itm.ComboCameraFPS},
+  { exif = 'FirmwareVersion', check = itm.CheckCameraFirmware, combo = itm.ComboCameraFirmware},
+  { exif = 'GPSCoordinates', check = itm.CheckLocation, combo = itm.ComboLocation},
+  { exif = 'Comment', check = itm.CheckComments, combo = itm.ComboComments},
 }
 
   -- exiftool recognized attributes
 exifAttributes = {
-    'Aperture',
-    'AudioChannels',
-    'AudioSampleRate',
-    'AvgBitrate',
-    'Brightness',
-    'ColorSpace',
-    'Contrast',
-    'CreateDate',
-    'CropHiSpeed',
-    'DateTimeOriginal',
-    'DaylightSavings',
-    'ISO',
-    'FilterEffect',
-    'FrameRate',
-    'HueAdjustment',
-    'Lens',
-    'LensType',
-    'LensSpec',
-    'Make',
-    'MediaCreateDate',
-    'MediaModifyDate',
-    'Megapixels',
-    'Model',
-    'ModifyDate',
-    'Rotation',
-    'Saturation',
-    'ShutterSpeed',
-    'Sharpness',
-    'Software',
-    'TimeZone',
-    'ToningEffect',
-    'WhiteBalance',
-    'WhiteBalanceFineTune',
+  'Aperture',
+  'AudioChannels',
+  'AudioSampleRate',
+  'AvgBitrate',
+  'Brightness',
+  'CameraISO',
+  'ColorMode',
+  'ColorSpace',
+  'Comment',
+  'Contrast',
+  'CreateDate',
+  'CropHiSpeed',
+  'DateTimeOriginal',
+  'DaylightSavings',
+  'FieldOfView',
+  'FileName',
+  'FilterEffect',
+  'FirmwareVersion',
+  'FrameRate',
+  'GPSCoordinates',
+  'HueAdjustment',
+  'ISO',
+  'Lens',
+  'LensSpec',
+  'LensType',
+  'Make',
+  'MediaCreateDate',
+  'MediaModifyDate',
+  'Megapixels',
+  'Model',
+  'ModifyDate',
+  'Rotation',
+  'Saturation',
+  'Sharpness',
+  'ShutterSpeed',
+  'Software',
+  'TimeZone',
+  'ToningEffect',
+  'VideoFrameRate',
+  'WhiteBalance',
+  'WhiteBalanceFineTune',
 }
 
 
@@ -210,29 +270,24 @@ end
 
 function win.On.BtnSelectAll.Clicked(ev)
    -- Select all checkboxes
-  for i, attr in ipairs(exifBoxes) do
-    attr['check'].Checked = true
-  end
+   SetExifBoxesState(true,false)
 end
 
 function win.On.BtnUnselectAll.Clicked(ev)
    -- Unelect all checkboxes
+   SetExifBoxesState(false,false)
+end
+
+function SetExifBoxesState(State, Blocked)
   for i, attr in ipairs(exifBoxes) do
-    attr['check'].Checked = false
-    attr['combo'].Enabled = false
+    if Blocked then attr['check'].Enabled = State else attr['check'].Checked = State end
+    if Blocked and State and not attr['check'].Checked then else attr['combo'].Enabled = State end -- allways do unless the if conditions are met 
   end
 end
 
 -- The window was closed
 function win.On.EditWin.Close(ev)
     disp:ExitLoop()
-end
-
-function runCmd(cmd)
-  local fileHandle = assert(io.popen(cmd, 'r'))
-  local out = assert(fileHandle:read('*a'))
-  fileHandle:close()
-  return out
 end
 
 function inspect(o)
@@ -248,8 +303,8 @@ function inspect(o)
    end
 end
 
-function split(pString, pPattern)
-   local Table = {}  -- NOTE: use {n = 0} in Lua-5.0
+function split(pString, pPattern, Table)
+   if Table == nil then Table = {} end -- NOTE: use {n = 0} in Lua-5.0
    local fpat = "(.-)" .. pPattern
    local last_end = 1
    local s, e, cap = pString:find(fpat, 1)
@@ -267,28 +322,39 @@ function split(pString, pPattern)
    return Table
 end
 
-function fetchMeta(file, exifs)
-  -- file paths needs escaping whitespace with quotes
-  local doc = itm.TextEdit.PlainText
-  local cmd = ''
-  if platform == 'Mac' then 
-      cmd = 'PATH=/usr/local/bin:/opt/homebrew/bin:$PATH; exiftool -csv -ee '.. exifs .. ' "'.. file .. '"'
-  else
-      cmd = 'exiftool -csv -ee '.. exifs .. ' "'.. file .. '"'
-  end
-  print(cmd)
-  local out = runCmd(cmd)
-
-  local header, values
-  i = 0
-  for line in out:gmatch("[^\r\n]+") do
-    if i == 0 then
-      header = split(line, ',')
-    else
-      values = split(line, ',')
+function fetchMeta(file, exifs, argfile, exiftool, cnt, extemd)
+  local args = exifs .. '\n' .. extemd .. '\n-c\n%d° %.3f\'\n-csvDelim\n|\n-csv\n' .. file ..'\n-execute' .. cnt .. '\n'
+  print((args:gsub('\n',' ')))
+  argfile:write(args)
+  argfile:flush()
+  
+  local header, values, line, stop
+  int = 0
+  repeat
+    line = exiftool:read('*l')
+    if CheckCancel() then return {} end
+    if line == nil then
+      log(' !! Error fetching metadata')
+      return {}
     end
-    i = i + 1
-  end
+    stop = line:match('{ready%d*}')
+    if stop == nil then
+      if int == 0 then
+        header = split(line, '|')
+      else
+        values = split(line, '|', values)
+      end
+      int = int + 1
+    else
+      LastLine = line:gsub('{ready%d*}','')
+      if LastLine ~= '' and int ~= 0 then values = split(LastLine, '|', values) end
+      print(stop)
+      if header == nil or values == nil then
+        log(' !! Failed to access file')
+        return {}
+      end
+    end
+  until stop ~= nil
 
   -- meta data as table
   local t = {}
@@ -296,6 +362,11 @@ function fetchMeta(file, exifs)
     -- format date fields, e.g. CreateDate, ModifyDate, DateTimeOriginal
     if string.match(v, '.*Date.*') ~= nil then
       t[v] = ConvertDate(values[i])
+    elseif string.match(v, '.*GPS.*') ~= nil then
+      t[v] = 'GPS: ' .. values[i]
+    elseif string.match(v, '.*FileName.*') ~= nil then
+      mod = values[i]:match('(.+)%..+$')
+      if mod ~= nil then t[v] = mod end
     else
       t[v] = values[i]
     end
@@ -311,11 +382,17 @@ function loadMediaPool()
   local project = resolve:GetProjectManager():GetCurrentProject()
   local mp = project:GetMediaPool()
   local clips = {}
+  local scanfolder = mp:GetRootFolder()
+  if CheckCancel() then return end
+  if itm.CheckCurrentFolder.Checked == true then
+    scanfolder = mp:GetCurrentFolder()
+  end
 
   -- load clips from pool into a table
   local count = 0
 
-  count = recursiveLoadMedia(mp:GetRootFolder(), clips, count)
+  count = recursiveLoadMedia(scanfolder, clips, count)
+  if CheckCancel() then return end
 
   log("Loaded " .. count .. " media pool items")
 
@@ -330,11 +407,13 @@ function recursiveLoadMedia(folder, clips, count)
     end
     cname = cname .. " [" .. val:GetMediaId() .."]"
     clips[cname] = val
+    if CheckCancel() then return end
     count = count + 1
   end
 
   for i, subfolder in ipairs(folder:GetSubFolderList()) do
     log("Loading subfolder " .. subfolder:GetName())
+    if CheckCancel() then return end
     count = recursiveLoadMedia(subfolder, clips, count)
   end
 
@@ -343,20 +422,19 @@ end
 
 -- append message into TextEdit field
 function log(message)
-  local log = itm.TextEdit.PlainText
+  local log = ''
   if message == nil then
-    log = log .. "(nil) \n"
+    log = "(nil)"
   else
-    log = log .. message .. "\n"
+    log = message
   end
-  itm.TextEdit.PlainText = log
-  itm.TextEdit:MoveCursor("End", "MoveAnchor")
+  itm.TextEdit:Append(log)
 end
 
 function CollectRequiredExifs()
   local t = {}
   local j = 1 -- concat doesn't work when numbering from zero
-
+  if CheckCancel() then return end
   -- go through all checkboxes and find selected ones
   for i, attr in ipairs(exifBoxes) do
     if attr['check'].Checked then
@@ -369,34 +447,83 @@ function CollectRequiredExifs()
     error("No check box was selected!")
   end
 
-  return '-' .. table.concat(t," -")
+  return '-' .. table.concat(t,"\n-")
 end
 
+function SetBlockedState(State)
+  local NotState = not State
+  if State then
+    itm.TextEdit.PlainText = ''
+    Cancelled = false
+  end
+  SetExifBoxesState(NotState, true)
+  itm.CheckExtractEmbedded.Enabled = NotState
+  itm.CheckCurrentFolder.Enabled = NotState
+  itm.BtnSelectAll.Enabled = NotState
+  itm.BtnUnselectAll.Enabled = NotState
+  itm.DryRun.Enabled = NotState
+  itm.LoadMetadata.Enabled = NotState
+  itm.BtnCancel.Enabled = State
+end
 
 -- The "LoadMetadata" button was pressed.
 function win.On.LoadMetadata.Clicked(ev)
-  itm.TextEdit.PlainText = ''
+  SetBlockedState(true)
   log('Synchronizing metadata...')
 
   local clips = loadMediaPool()
   local exifs = CollectRequiredExifs()
 
-  updateMetadata(clips, exifs, false)
+  if Cancelled then log('Cancelled') else updateMetadata(clips, exifs, false) end
+  SetBlockedState(false)
 end
 
 function win.On.DryRun.Clicked(ev)
-  itm.TextEdit.PlainText = ''
+  SetBlockedState(true)
   log('Only printing possible metadata changes')
 
   local clips = loadMediaPool()
   local exifs = CollectRequiredExifs()
 
-  updateMetadata(clips, exifs, true)
+  if Cancelled then log('Cancelled') else updateMetadata(clips, exifs, true) end
+  SetBlockedState(false)
+end
+
+function CheckCancel()
+  if Cancelled == false then
+    Cancelled = itm.BtnCancel.Checked
+    if Cancelled then
+      itm.BtnCancel.Enabled = false
+      itm.BtnCancel.Checked = false
+      log('Cancelling...')
+    end
+  end
+  return Cancelled
+end
+
+function setupexiftool(argfilename)
+  local cmd = ''
+  
+  if platform == 'Mac' then 
+      cmd = 'PATH=/usr/local/bin:/opt/homebrew/bin:$PATH; exiftool -stay_open true -@ "' .. argfilename .. '"'
+  else
+      cmd = 'exiftool -stay_open true -@ "' .. argfilename .. '"'
+  end
+  return io.popen(cmd, 'r')
 end
 
 -- noop = no-operation
 function updateMetadata(clips, exifs, noop)
-  local cnt = 1
+  local cnt = 0
+  local argfilename = os.tmpname()
+  print(argfilename)
+  local argfile = io.open(argfilename,'w')
+  local exiftool = setupexiftool(argfilename)
+  local extemd = ''
+  if itm.CheckExtractEmbedded.Checked == true then
+    extemd = '-ee'
+  end
+
   for name, clip in pairs(clips) do
     log("[Clip " .. cnt .. "] " .. name)
     -- actual path to clip's source on disk
@@ -413,8 +540,8 @@ function updateMetadata(clips, exifs, noop)
     else
       -- log("Path: " .. clip_path)
       -- read EXIF
-      local meta = fetchMeta(clip_path, exifs)
-
+      local meta = fetchMeta(clip_path, exifs, argfile, exiftool, cnt, extemd)
+      if CheckCancel() then break end
       -- update clip's metadata
       for i, attr in ipairs(exifBoxes) do
         if attr['check'].Checked then
@@ -433,8 +560,19 @@ function updateMetadata(clips, exifs, noop)
       end
     end
     cnt = cnt + 1
+    if CheckCancel() then break end
   end
-  log("(done) Processed " .. cnt .. " media pool files")
+
+  argfile:write('-stay_open\nFalse\n')
+  argfile:flush()
+  exiftool:close()
+  argfile:close()
+  os.remove(argfilename)
+  if Cancelled then
+    log("(Cancelled) Processed " .. cnt .. " media pool files")
+  else
+    log("(done) Processed " .. cnt .. " media pool files")
+  end
 end
 
 function PopulateExifCombo(exifBoxes)
