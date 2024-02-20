@@ -237,6 +237,8 @@ exifAttributes = {
   'CropHiSpeed',
   'DateTimeOriginal',
   'DaylightSavings',
+  'DeviceManufacturer',
+  'DeviceModelName',
   'FieldOfView',
   'FileName',
   'FilterEffect',
