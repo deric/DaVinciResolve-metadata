@@ -223,6 +223,7 @@ exifBoxes = {
 
   -- exiftool recognized attributes
 exifAttributes = {
+  'AcquisitionRecordGroupItemValue',
   'Aperture',
   'AudioChannels',
   'AudioSampleRate',
@@ -256,6 +257,7 @@ exifAttributes = {
   'Megapixels',
   'Model',
   'ModifyDate',
+  'RelevantFilesRelatedToFile',
   'Rotation',
   'Saturation',
   'Sharpness',
@@ -266,8 +268,6 @@ exifAttributes = {
   'VideoFrameRate',
   'WhiteBalance',
   'WhiteBalanceFineTune',
-  'AcquisitionRecordGroupItemValue',
-  'RelevantFilesRelatedToFile',
 }
 
 
