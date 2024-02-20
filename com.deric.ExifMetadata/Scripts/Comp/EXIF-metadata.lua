@@ -109,6 +109,16 @@ win = disp:AddWindow({
             ui:CheckBox{ID = "CheckComments", Text = "Comments", Checked = false,},
             ui:ComboBox{ID = "ComboComments", Enabled = false},
           },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckColorSpaceNotes", Text = "Color Space Notes", Checked = false,},
+            ui:ComboBox{ID = "ComboColorSpaceNotes", Enabled = false},
+          },
+          ui:HGroup{
+            Weight = 0.1,
+            ui:CheckBox{ID = "CheckLUTUsed", Text = "LUT Used", Checked = false,},
+            ui:ComboBox{ID = "ComboLUTUsed", Enabled = false},
+          },
 
         },
         
@@ -207,6 +217,8 @@ exifBoxes = {
   { exif = 'FirmwareVersion', check = itm.CheckCameraFirmware, combo = itm.ComboCameraFirmware},
   { exif = 'GPSCoordinates', check = itm.CheckLocation, combo = itm.ComboLocation},
   { exif = 'Comment', check = itm.CheckComments, combo = itm.ComboComments},
+  { exif = 'AcquisitionRecordGroupItemValue', check = itm.CheckColorSpaceNotes, combo = itm.ComboColorSpaceNotes},
+  { exif = 'RelevantFilesRelatedToFile', check = itm.CheckLUTUsed, combo = itm.ComboLUTUsed},
 }
 
   -- exiftool recognized attributes
@@ -252,6 +264,8 @@ exifAttributes = {
   'VideoFrameRate',
   'WhiteBalance',
   'WhiteBalanceFineTune',
+  'AcquisitionRecordGroupItemValue',
+  'RelevantFilesRelatedToFile',
 }
 
 
