@@ -116,23 +116,6 @@ win = disp:AddWindow({
 
         ui:HGroup{
           Weight = 0.1,
-          ui:Label{
-            ID = "LabelSettings", Text = "Scan Settings",
-            Alignment = { AlignHCenter = true, AlignVCenter = true },
-          },
-        },
-        ui:VGap(5, 0.01),
-
-        ui:HGroup{
-          Weight = 0.1,
-          ui:CheckBox{ID = "CheckExtractEmbedded", Text = "Extract Embedded Data", Checked = true, ToolTip = 'Disabling this will speedup scanning for files with GPS or motion data, but might skip metadata on certain cameras'},
-          ui:CheckBox{ID = "CheckCurrentFolder", Text = "Scan Current Folder Only", Checked = false, ToolTip = 'Only scan the files in the folder currently selected or open in the media pool'},
-        },
-
-        ui:VGap(5, 0.01),
-
-        ui:HGroup{
-          Weight = 0.1,
           ui:VGroup{
             Weight = 0.1,
             ui:Button{ID = "BtnSelectAll", Text = "Select All",},
@@ -143,16 +126,33 @@ win = disp:AddWindow({
           }
         },
 
+      	ui:VGap(5, 0.01),
+
+        ui:HGroup{
+          Weight = 0.1,
+          ui:Label{
+            ID = "LabelSettings", Text = "Scan Settings",
+            Alignment = { AlignHCenter = true, AlignVCenter = true },
+          },
+        },
+        ui:VGap(5, 0.01),
+
+        ui:HGroup{
+          Weight = 0.1,
+          ui:CheckBox{ID = "CheckExtractEmbedded", Text = "Extract Embedded Data", Checked = true, ToolTip = 'Disabling this will speedup scanning for files with GPS or motion data, but might skip metadata on certain cameras'},
+          ui:CheckBox{ID = "CheckCurrentFolder", Text = "Scan Current Media Pool Folder Only", Checked = false, ToolTip = 'Only scan the files in the folder currently selected or open in the media pool'},
+        },
+
         ui:VGap(5, 0.01),
         ui:HGroup{
             Weight = 0.1,
             ui:VGroup{
               Weight = 0.1,
-              ui:Button{ID = "DryRun", Text = "Dry run", ToolTip = 'Scan the files without syncing the metadata with Resolve'},
+              ui:Button{ID = "DryRun", Text = "Preview Scan", ToolTip = 'Scan the files without modifying any clip metadata in Resolve yet'},
             },
             ui:VGroup{
               Weight = 0.1,
-              ui:Button{ID = "LoadMetadata", Text = "Sync MediaStore", ToolTip = 'Scan and sync the metadata with Resolve'},
+              ui:Button{ID = "LoadMetadata", Text = "Scan And Apply", ToolTip = 'Scan and apply the EXIF metadata to the media pool clips in Resolve'},
             }
         },
         ui:HGroup{
