@@ -246,6 +246,7 @@ exifAttributes = {
   'FirmwareVersion',
   'FrameRate',
   'GPSCoordinates',
+  'GPSPosition',
   'HueAdjustment',
   'ISO',
   'Lens',
