@@ -17,6 +17,7 @@ Tested on:
   * Resolve 16
   * Resolve 17
   * Resolve 18
+  * Resolve 19
 
 ## Installation
 
@@ -43,13 +44,17 @@ wget https://raw.githubusercontent.com/deric/DaVinciResolve-metadata/main/com.de
 ```
 
 ## Usage
-
+<!-- TODO: Update Documentation and take another picture -->
  1. Import some media files from Media Storage to Project's Media Pool
  2. Select from main menu `Workspace > Scripts > EXIF-metadata`
  3. Select meta fields
- 4. Run Sychronize Media Store
+ 4. Run "Preview Scan" to see test output or "Scan and Apply" to actually update metdata.
 
 ![EXIF synchronizer window](docs/exif_window.png)
+
+### Automatic Population of "Input Color Space" field.
+
+By checking the "Update Clip Color Space from Color Space Notes" box, you can use the value extracted for the "Color Space Notes" metadata tag to automatically populate the "Input Color Space" field. This is useful when working in color-managed workflows. Currently, this is only supported for Sony Cameras and a few of their default picture profiles (S-Gamut/s-log2, S-Gamut3/s-log3, and S-Gamut3.Cine/s-log3.cine).
 
 ## How does it work
 
