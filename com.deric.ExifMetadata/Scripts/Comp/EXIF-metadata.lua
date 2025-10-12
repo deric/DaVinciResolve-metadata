@@ -153,6 +153,11 @@ win = disp:AddWindow({
           ui:CheckBox{ID = "CheckCurrentFolder", Text = "Scan Current Media Pool Folder Only", Checked = false, ToolTip = 'Only scan the files in the folder currently selected or open in the media pool'},
         },
 
+    ui:HGroup {
+      Weight = 0.1,
+      ui:CheckBox { ID = "CheckPopulateClipColorSpace", Text = "Update Clip Color Space from Color Space Notes (Sony Cameras)", Checked = false, ToolTip = 'Automatically updates the "Input Color Space" property for a clip based on its color space metadata. ' ..
+          'Currently, only supports Sony Cameras and the cine2, s-log2, s-log3, and s-log3.cine picture profiles (PP6, 7, 8, and 9).' },
+    },
         ui:VGap(5, 0.01),
         ui:HGroup{
             Weight = 0.1,
@@ -221,7 +226,7 @@ exifBoxes = {
   { exif = 'RelevantFilesRelatedToFile', check = itm.CheckLUTUsed, combo = itm.ComboLUTUsed},
 }
 
-  -- exiftool recognized attributes
+-- exiftool recognized attributes
 exifAttributes = {
   'AcquisitionRecordGroupItemValue',
   'Aperture',
@@ -339,6 +344,15 @@ function split(pString, pPattern, Table)
    return Table
 end
 
+function table_contains_value(tbl, x)
+  found = false
+  for _, v in pairs(tbl) do
+    if v == x then
+      found = true
+    end
+  end
+  return found
+end
 function fetchMeta(file, exifs, argfile, exiftool, cnt, extemd)
   local args = exifs .. '\n' .. extemd .. '\n-c\n%d° %.3f\'\n-csvDelim\n|\n-csv\n' .. file ..'\n-execute' .. cnt .. '\n'
   print((args:gsub('\n',' ')))
@@ -464,6 +478,17 @@ function CollectRequiredExifs()
     error("No check box was selected!")
   end
 
+  -- Add necessary exifs for our other functions to work
+
+  -- Need DeviceManufacturer tag to properly set Input Color Space.
+  local deviceManufacturerExifTag = "DeviceManufacturer"
+  if itm.CheckPopulateClipColorSpace.Checked == true then
+    if not table_contains_value(t, deviceManufacturerExifTag) then
+      -- Add it to our list if it's not already there.
+      t[j] = deviceManufacturerExifTag
+      j = j + 1
+    end
+  end
   return '-' .. table.concat(t,"\n-")
 end
 
@@ -475,6 +500,7 @@ function SetBlockedState(State)
   end
   SetExifBoxesState(NotState, true)
   itm.CheckExtractEmbedded.Enabled = NotState
+  itm.CheckPopulateClipColorSpace.Enabled = NotState
   itm.CheckCurrentFolder.Enabled = NotState
   itm.BtnSelectAll.Enabled = NotState
   itm.BtnUnselectAll.Enabled = NotState
@@ -571,6 +597,15 @@ function updateMetadata(clips, exifs, noop)
               -- actually update attributes
               log(attr['check'].Text.. ' : '.. val)
               clip:SetMetadata(attr['check'].Text, val)
+              -- Set Input Color Space for known Sony Color Profiles if enabled
+              if itm.CheckPopulateClipColorSpace.Checked == true and
+                  attr['check'].Text == 'Color Space Notes' then
+                local resolveColorSpace = InferClipColorSpaceFromExifMetadata(val, meta)
+                if resolveColorSpace ~= nil then
+                  log("Set Clip Input Color Space : " .. resolveColorSpace)
+                  clip:SetClipProperty("Input Color Space", resolveColorSpace)
+                end
+              end
             end
           end
         end
@@ -592,6 +627,39 @@ function updateMetadata(clips, exifs, noop)
   end
 end
 
+function InferClipColorSpaceFromExifMetadata(exifColorSpace, clipMetadata)
+  -- TODO: Add more information for other camera manufacturers
+  if clipMetadata['DeviceManufacturer'] ~= 'Sony' then
+    return nil
+  end
+
+  -- Converts from exif listed color space to a DaVinci resolve color space.
+  -- Tested with picture profiles from a SONY DSC-RX100 VII. Assuming this generalizes somewhat across Sony cameras.
+  -- This is not an exhaustive list.
+
+  -- NOTE: For Sony Cameras, metadata is extracted like so:
+  --[[
+  ...
+      Acquisition Record Group Item Name: CaptureGammaEquation
+      Acquisition Record Group Item Value: s-log2       <---- What we get
+      Acquisition Record Group Item Name: CaptureColorPrimaries
+      Acquisition Record Group Item Value: s-gamut      <---- Our color gamut, which we don't capture cleanly in this program (would require a refactor)
+      Acquisition Record Group Item Name: CodingEquations
+      Acquisition Record Group Item Value: rec709
+  ...
+  ]]
+  -- Thus, we'll infer a little bit based on the information we do capture.
+
+  local colorSpaceDictionary = {
+    ["ex-cine2"] = "Rec.709 (Scene)",         -- Sony PP6 profile, which seems to still correspond to Rec.709 with a slightly different gamma curve.
+    ["rec709-xvycc"] = "Rec.709 (Scene)",     -- Normal Picture Profile (None)
+    ["s-log2"] = "S-Gamut/S-Log2",            -- Sony PP7 profile (S-Gamut Color Mode, s-log-2 gamma). Not guaranteed (could be a custom one), but likely.
+    ["s-log3-cine"] = "S-Gamut3.Cine/S-Log3", -- Sony PP8 picture profile
+    ["s-log3"] = "S-Gamut3/S-Log3",           -- Sony PP9 picture profile
+  }
+
+  return colorSpaceDictionary[exifColorSpace]
+end
 function PopulateExifCombo(exifBoxes)
   for i, meta in ipairs(exifBoxes) do
     meta['combo']:AddItems(exifAttributes)   -- set all known EXIF keys
